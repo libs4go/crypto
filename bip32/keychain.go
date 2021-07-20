@@ -21,49 +21,30 @@ type DrivedKey struct {
 	ChainCode  []byte // 32 bytes
 }
 
-// PublicKeyF .
-type PublicKeyF func(privateKey []byte) []byte
-
 // KeyParam .
 type KeyParam interface {
 	// PrivateToPublic(privateKey []byte) []byte
 	Curve() elliptic.Curve
 }
 
-func isOdd(a *big.Int) bool {
-	return a.Bit(0) == 1
+type keyParamImpl struct {
+	c elliptic.Curve
 }
 
-func paddedAppend(size uint, dst, src []byte) []byte {
-	for i := 0; i < int(size)-len(src); i++ {
-		dst = append(dst, 0)
+func (kp *keyParamImpl) Curve() elliptic.Curve {
+	return kp.c
+}
+
+func FromCurve(curve elliptic.Curve) KeyParam {
+	return &keyParamImpl{
+		c: curve,
 	}
-	return append(dst, src...)
 }
 
-// CompressedPublicKeyBytes .
-func compressedPublicKeyBytes(x, y *big.Int) []byte {
-	b := make([]byte, 0, 33)
-	format := byte(0x2)
-	if isOdd(y) {
-		format |= 0x1
-	}
-	b = append(b, format)
-	return paddedAppend(32, b, x.Bytes())
-}
+func privateKeyToPublicKey(curve elliptic.Curve, privateKey []byte) []byte {
+	x, y := curve.ScalarBaseMult(privateKey)
 
-// func compress(x, y *big.Int) []byte {
-// 	two := big.NewInt(2)
-// 	rem := two.Mod(y, two).Uint64()
-// 	rem += 2
-// 	b := make([]byte, 2)
-// 	binary.BigEndian.PutUint16(b, uint16(rem))
-// 	rest := x.Bytes()
-// 	return append(b[1:], rest...)
-// }
-
-func privateToPublic(curve elliptic.Curve, key []byte) []byte {
-	return compressedPublicKeyBytes(curve.ScalarBaseMult(key))
+	return elliptic.MarshalCompressed(curve, x, y)
 }
 
 // NewMasterKey create new master key from seed
@@ -82,9 +63,8 @@ func NewMasterKey(seed []byte, param KeyParam) (*DrivedKey, error) {
 	chainCode := intermediary[32:]
 
 	return &DrivedKey{
-		Param:     param,
-		PublicKey: privateToPublic(param.Curve(), keyBytes),
-		// PublicKey:  param.PrivateToPublic(keyBytes),
+		Param:      param,
+		PublicKey:  privateKeyToPublicKey(param.Curve(), keyBytes),
 		PrivateKey: keyBytes,
 		ChainCode:  chainCode,
 	}, nil
@@ -130,9 +110,8 @@ func (key *DrivedKey) ChildKey(index bip44.Number) (*DrivedKey, error) {
 	newkey := key.addPrivKeys(keyBytes, key.PrivateKey)
 
 	return &DrivedKey{
-		Param:     key.Param,
-		PublicKey: privateToPublic(key.Param.Curve(), newkey),
-		// PublicKey:  key.Param.PrivateToPublic(keyBytes),
+		Param:      key.Param,
+		PublicKey:  privateKeyToPublicKey(key.Param.Curve(), newkey),
 		PrivateKey: newkey,
 		ChainCode:  chainCode,
 	}, nil
