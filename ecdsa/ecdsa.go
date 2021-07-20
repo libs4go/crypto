@@ -60,6 +60,17 @@ func PublicKeyBytes(pub *ecdsa.PublicKey) []byte {
 	return elliptic.Marshal(pub.Curve, pub.X, pub.Y)
 }
 
+func isOdd(a *big.Int) bool {
+	return a.Bit(0) == 1
+}
+
+func paddedAppend(size uint, dst, src []byte) []byte {
+	for i := 0; i < int(size)-len(src); i++ {
+		dst = append(dst, 0)
+	}
+	return append(dst, src...)
+}
+
 // CompressedPublicKeyBytes .
 func CompressedPublicKeyBytes(pub *ecdsa.PublicKey) []byte {
 	b := make([]byte, 0, 33)
