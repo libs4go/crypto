@@ -1,2 +1,2 @@
 # crypto
-golang crypto extension library for blockchain and others
+extend standard golang crypto library for blockchain and others
