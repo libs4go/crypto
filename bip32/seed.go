@@ -26,7 +26,7 @@ func FromMnemonic(param KeyParam, mnemonic string, password string) (*DrivedKey,
 }
 
 // DriveFrom driver key from path
-func DriveFrom(key *DrivedKey, path string) ([]byte, error) {
+func DriveFrom(key *DrivedKey, path string) (*DrivedKey, error) {
 	dpath, err := bip44.Parse(path)
 
 	if err != nil {
@@ -63,5 +63,5 @@ func DriveFrom(key *DrivedKey, path string) ([]byte, error) {
 		return nil, errors.Wrap(err, "create address child key error")
 	}
 
-	return key.PrivateKey, nil
+	return key, nil
 }
