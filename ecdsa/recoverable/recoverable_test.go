@@ -49,6 +49,17 @@ func TestK(t *testing.T) {
 	require.NotEqual(t, s, s1)
 
 	require.NotEqual(t, v, v1)
+
+	r2, s2, v2, err := Sign(privateKey, []byte("hello rfc6979"), false)
+
+	require.NoError(t, err)
+
+	require.Equal(t, r, r2)
+
+	require.Equal(t, s, s2)
+
+	require.Equal(t, v, v2)
+
 }
 
 func TestCompressSignVerify(t *testing.T) {
