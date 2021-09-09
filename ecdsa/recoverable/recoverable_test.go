@@ -2,37 +2,29 @@ package recoverable
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"testing"
 
-	"github.com/libs4go/crypto/elliptic"
+	ellipticx "github.com/libs4go/crypto/elliptic"
 	"github.com/stretchr/testify/require"
 )
 
-func TestSignVerify(t *testing.T) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.SECP256K1(), rand.Reader)
-
-	require.NoError(t, err)
-
-	source := "hello rfc6979"
-
-	r, s, v, err := Sign(privateKey, []byte(source), false)
-
-	require.NoError(t, err)
-
-	require.True(t, ecdsa.Verify(&privateKey.PublicKey, []byte(source), r, s))
-
-	publicKey, compressed, err := Recover(privateKey.Curve, r, s, v, []byte(source))
-
-	require.NoError(t, err)
-
-	require.False(t, compressed)
-
-	require.Equal(t, publicKey.X, privateKey.PublicKey.X)
-	require.Equal(t, publicKey.Y, privateKey.PublicKey.Y)
-}
 func TestK(t *testing.T) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.SECP256K1(), rand.Reader)
+	testK(t, elliptic.P256())
+
+	testK(t, elliptic.P224())
+
+	testK(t, elliptic.P384())
+
+	testK(t, elliptic.P521())
+
+	testK(t, ellipticx.SECP256K1())
+
+}
+
+func testK(t *testing.T, curve elliptic.Curve) {
+	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 
 	require.NoError(t, err)
 
@@ -59,17 +51,39 @@ func TestK(t *testing.T) {
 	require.Equal(t, s, s2)
 
 	require.Equal(t, v, v2)
-
 }
 
 func TestCompressSignVerify(t *testing.T) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.SECP256K1(), rand.Reader)
+
+	testRecoverSign(t, elliptic.P256(), true)
+
+	testRecoverSign(t, elliptic.P224(), true)
+
+	testRecoverSign(t, elliptic.P384(), true)
+
+	testRecoverSign(t, elliptic.P521(), true)
+
+	testRecoverSign(t, ellipticx.SECP256K1(), true)
+
+	testRecoverSign(t, elliptic.P256(), false)
+
+	testRecoverSign(t, elliptic.P224(), false)
+
+	testRecoverSign(t, elliptic.P384(), false)
+
+	testRecoverSign(t, elliptic.P521(), false)
+
+	testRecoverSign(t, ellipticx.SECP256K1(), false)
+}
+
+func testRecoverSign(t *testing.T, curve elliptic.Curve, c bool) {
+	privateKey, err := ecdsa.GenerateKey(curve, rand.Reader)
 
 	require.NoError(t, err)
 
 	source := "hello rfc6979"
 
-	r, s, v, err := Sign(privateKey, []byte(source), true)
+	r, s, v, err := Sign(privateKey, []byte(source), c)
 
 	require.NoError(t, err)
 
@@ -79,7 +93,7 @@ func TestCompressSignVerify(t *testing.T) {
 
 	require.NoError(t, err)
 
-	require.True(t, compressed)
+	require.Equal(t, compressed, c)
 
 	require.Equal(t, publicKey.X, privateKey.PublicKey.X)
 	require.Equal(t, publicKey.Y, privateKey.PublicKey.Y)
