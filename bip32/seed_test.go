@@ -60,9 +60,9 @@ func TestDrive(t *testing.T) {
 
 	testDrivePath(t, masterKey, "m/44'/60'/0'/0/0", "e68232f718d6b892d544eae6957522437618ad49e636dd98693295b0d6424938")
 
-	// testDrivePath(t, masterKey, "m/44'/60'/0'/0/1", "26894ab0843e95eebd226f8a0dc2f5cd4291295edb8e1a2472989776600eac2f")
+	testDrivePath(t, masterKey, "m/44'/60'/0'/0/1", "229b48bfdc229545df7a632efe388d715f6a7e8964d42364fa75284eb4f5b58e")
 
-	// testDrivePath(t, masterKey, "m/44'/60'/0'/0/17", "e4480f23891aa46b931c6eff9b0b8cff4b04702754e1d6653f9d188dfe7c1ddb")
+	testDrivePath(t, masterKey, "m/44'/60'/0'/0/17", "4b5085a503606bbcd26b8cfe70c9309efeb77bbddd9d948d8a11883c30185655")
 }
 
 func testDrivePath(t *testing.T, masterKey *DrivedKey, path string, expect string) {
